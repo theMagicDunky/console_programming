@@ -32,6 +32,23 @@ void ATextureGenerator::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
+void ATextureGenerator::generateNoise()
+{
+	for (int h = 0; h < height; ++h)
+	{
+		for (int w = 0; w < width; ++w)
+		{
+			uint8 num = rand() % 255;
+			pixels[(h*height) + w] = { num, num, num, 255 };
+		}
+	}
+}
+
+void ATextureGenerator::setPixel(int h, int w, TexturePixel col)
+{
+	pixels[(w*width) + h] = col;
+}
+
 void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIndex, int32 w, int32 h)
 {
 	if (!staticMesh)
@@ -59,9 +76,48 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 		delete[] pixels;
 	pixels = new TexturePixel[numPixels];
 
-	for (int i = 0; i < numPixels; ++i)
+	generateNoise();
+
+	myTexture->UpdateTextureRegions(
+		0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),
+		reinterpret_cast<uint8*>(pixels)
+	);
+
+	myMaterial = staticMesh->CreateAndSetMaterialInstanceDynamic(materialIndex);
+	myMaterial->SetTextureParameterValue("texture", myTexture);
+}
+void ATextureGenerator::GenNoiseTexture()
+{
+	generateNoise();
+
+	myTexture->UpdateTextureRegions(
+		0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),
+		reinterpret_cast<uint8*>(pixels)
+	);
+
+	myMaterial->SetTextureParameterValue("texture", myTexture);
+}
+
+void ATextureGenerator::GenCircleTexture(int radius, int xLoc, int yLoc)
+{
+	int i;
+	xLoc = rand() % width;
+	yLoc = rand() % height;
+
+	for (i = 0; i < numPixels; ++i)
+		pixels[i] = { 255, 255, 255, 255 };
+
+	for (i = 0; i <= radius; ++i)
 	{
-		pixels[i] = {0, 0, 255, 255};
+		int d = FMath::CeilToInt(FMath::Sqrt(radius * radius - i * i));
+		for (int j = 0; j <= d; ++j)
+		{
+			TexturePixel col = { 0, 0, 255, 255 };
+			setPixel(i + xLoc, j + yLoc, col);
+			setPixel(-i + xLoc, j + yLoc, col);
+			setPixel(-i + xLoc, -j + yLoc, col);
+			setPixel(i + xLoc, -j + yLoc, col);
+		}
 	}
 
 	myTexture->UpdateTextureRegions(
@@ -69,9 +125,9 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 		reinterpret_cast<uint8*>(pixels)
 	);
 
-	UMaterialInstanceDynamic* material = staticMesh->CreateAndSetMaterialInstanceDynamic(materialIndex);
-	material->SetTextureParameterValue("texture", myTexture);
+	myMaterial->SetTextureParameterValue("texture", myTexture);
 }
+
 // Called every frame
 void ATextureGenerator::Tick(float DeltaTime)
 {

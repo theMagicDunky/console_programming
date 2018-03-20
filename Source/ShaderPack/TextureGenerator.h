@@ -32,8 +32,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 
+	void generateNoise();
+	void setPixel(int h, int w, TexturePixel col);
+
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void Init(UStaticMeshComponent* staticMesh, int32 materialIndex, int32 w, int32 h);
+	UFUNCTION(BlueprintCallable, Category = "TextureGen")
+	void GenNoiseTexture();
+	UFUNCTION(BlueprintCallable, Category = "TextureGen")
+	void GenCircleTexture(int radius, int xLoc, int yLoc);
 
 	UMaterialInstanceDynamic* myMaterial;
 	UTexture2D* myTexture;
@@ -45,8 +52,6 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	
+	virtual void Tick(float DeltaTime) override;	
 	
 };
