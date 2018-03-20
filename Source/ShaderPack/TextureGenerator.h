@@ -25,20 +25,20 @@ class SHADERPACK_API ATextureGenerator : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ATextureGenerator();
+	~ATextureGenerator();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
+
+	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void Init(UStaticMeshComponent* staticMesh, int32 materialIndex, int32 w, int32 h);
 
 	UMaterialInstanceDynamic* myMaterial;
 	UTexture2D* myTexture;
 	FUpdateTextureRegion2D* updateTextureRegion;
 
-	bool ready;
-
-	// maybe these need to be public?
 	int32 width, height, numPixels;
 
 	TexturePixel* pixels;
