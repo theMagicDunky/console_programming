@@ -28,6 +28,8 @@ public:
 	~ATextureGenerator();
 
 protected:
+	const int numBubbleTextures = 2;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
@@ -40,7 +42,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void GenNoiseTexture();
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
-	void GenCircleTexture(int radius, int xLoc, int yLoc);
+	void GenNewBubbleTextures(int radius, int numBubbles);
+
+	void GenCircleTexture(int radius, int numBubbles, FName texture);
 
 	UMaterialInstanceDynamic* myMaterial;
 	UTexture2D* myTexture;

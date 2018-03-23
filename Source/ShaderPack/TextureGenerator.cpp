@@ -84,7 +84,6 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 	);
 
 	myMaterial = staticMesh->CreateAndSetMaterialInstanceDynamic(materialIndex);
-	myMaterial->SetTextureParameterValue("texture", myTexture);
 }
 void ATextureGenerator::GenNoiseTexture()
 {
@@ -98,25 +97,39 @@ void ATextureGenerator::GenNoiseTexture()
 	myMaterial->SetTextureParameterValue("texture", myTexture);
 }
 
-void ATextureGenerator::GenCircleTexture(int radius, int xLoc, int yLoc)
+void ATextureGenerator::GenNewBubbleTextures(int radius, int numBubbles)
+{
+	for (int i = 0; i < numBubbleTextures; ++i)
+	{
+		FString textureName = "bubbleTexture" + FString::FromInt(i);
+		GenCircleTexture(radius, numBubbles, FName(*textureName));
+	}
+}
+
+void ATextureGenerator::GenCircleTexture(int radius, int numBubbles, FName texture)
 {
 	int i;
-	xLoc = rand() % width;
-	yLoc = rand() % height;
 
 	for (i = 0; i < numPixels; ++i)
 		pixels[i] = { 255, 255, 255, 255 };
 
-	for (i = 0; i <= radius; ++i)
+	for (i = 0; i < numBubbles; ++i)
 	{
-		int d = FMath::CeilToInt(FMath::Sqrt(radius * radius - i * i));
-		for (int j = 0; j <= d; ++j)
+		int xLoc = rand() % width;
+		int yLoc = rand() % height;
+	
+		for (int j = 0; j <= radius; ++j)
 		{
-			TexturePixel col = { 0, 0, 255, 255 };
-			setPixel(i + xLoc, j + yLoc, col);
-			setPixel(-i + xLoc, j + yLoc, col);
-			setPixel(-i + xLoc, -j + yLoc, col);
-			setPixel(i + xLoc, -j + yLoc, col);
+			int d = FMath::CeilToInt(FMath::Sqrt(radius * radius - j * j));
+			for (int k = 0; k <= d; ++k)
+			{
+				//FMath::FloorToInt((float)k+1 / (float)d+1)
+				TexturePixel col = { 128, 0, 255, 255};
+				setPixel(j + xLoc, k + yLoc, col);
+				setPixel(-j + xLoc, k + yLoc, col);
+				setPixel(-j + xLoc, -k + yLoc, col);
+				setPixel(j + xLoc, -k + yLoc, col);
+			}
 		}
 	}
 
@@ -125,7 +138,7 @@ void ATextureGenerator::GenCircleTexture(int radius, int xLoc, int yLoc)
 		reinterpret_cast<uint8*>(pixels)
 	);
 
-	myMaterial->SetTextureParameterValue("texture", myTexture);
+	myMaterial->SetTextureParameterValue(texture, myTexture);
 }
 
 // Called every frame
