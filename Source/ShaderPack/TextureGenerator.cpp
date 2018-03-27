@@ -14,10 +14,7 @@ ATextureGenerator::ATextureGenerator()
 
 ATextureGenerator::~ATextureGenerator()
 {
-	if (pixels)
-		delete[] pixels;
-	if(updateTextureRegion)
-		delete updateTextureRegion;
+	
 }
 
 // Called when the game starts or when spawned
@@ -94,7 +91,7 @@ void ATextureGenerator::GenNoiseTexture()
 		reinterpret_cast<uint8*>(pixels)
 	);
 
-	myMaterial->SetTextureParameterValue("texture", myTexture);
+	myMaterial->SetTextureParameterValue("noiseTexture", myTexture);
 }
 
 void ATextureGenerator::GenNewBubbleTextures(int radius, int numBubbles)
@@ -124,7 +121,7 @@ void ATextureGenerator::GenCircleTexture(int radius, int numBubbles, FName textu
 			for (int k = 0; k <= d; ++k)
 			{
 				//FMath::FloorToInt((float)k+1 / (float)d+1)
-				TexturePixel col = { 128, 0, 255, 255};
+				TexturePixel col = { 128, 128, 128, 255};
 				setPixel(j + xLoc, k + yLoc, col);
 				setPixel(-j + xLoc, k + yLoc, col);
 				setPixel(-j + xLoc, -k + yLoc, col);
