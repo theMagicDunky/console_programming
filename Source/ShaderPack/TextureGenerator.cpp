@@ -108,7 +108,7 @@ void ATextureGenerator::GenCircleTexture(int radius, int numBubbles, FName textu
 	int i;
 
 	for (i = 0; i < numPixels; ++i)
-		pixels[i] = { 255, 255, 255, 255 };
+		pixels[i] = { 0, 0, 0, 255 };
 
 	for (i = 0; i < numBubbles; ++i)
 	{
