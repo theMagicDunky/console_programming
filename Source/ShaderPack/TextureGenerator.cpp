@@ -3,6 +3,8 @@
 #include "TextureGenerator.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h "
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Runtime/CoreUObject/Public/UObject/Package.h"
+#include "Runtime/AssetRegistry/Public/AssetRegistryModule.h"
 
 // Sets default values
 ATextureGenerator::ATextureGenerator()
@@ -57,8 +59,15 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 	if (!width || !height)
 		return;
 
+	// thanks fam
+	// http://isaratech.com/save-a-procedurally-generated-texture-as-a-new-asset/
+
+	FString packageName = TEXT("/Game/ProceduralTextures/circleTex");
+	UPackage *package = CreatePackage(NULL, *packageName);
+	package->FullyLoad();
+
 	// texture setup
-	myTexture = UTexture2D::CreateTransient(width, height);
+	myTexture = NewObject<UTexture2D>(package, TEXT("circleTex"), RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	// no compression pls
 	myTexture->CompressionSettings = TextureCompressionSettings::TC_VectorDisplacementmap;
 	myTexture->SRGB = 0;
@@ -81,6 +90,14 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 	);
 
 	myMaterial = staticMesh->CreateAndSetMaterialInstanceDynamic(materialIndex);
+
+	myTexture->UpdateResource();
+	package->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(myTexture);
+
+	FString packageFileName = FPackageName::LongPackageNameToFilename(packageName, FPackageName::GetAssetPackageExtension());
+	bool saved = UPackage::SavePackage(package, myTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *packageFileName, GError, nullptr, true, true, SAVE_NoError);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), saved ? TEXT("wow it did it") : TEXT("wow it didnt do it"));
 }
 void ATextureGenerator::GenNoiseTexture()
 {
