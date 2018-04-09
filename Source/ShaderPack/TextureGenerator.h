@@ -35,6 +35,7 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	void generateNoise();
+	bool saveTexture(FString packageName);
 	void setPixel(int h, int w, TexturePixel col);
 
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
@@ -49,6 +50,7 @@ protected:
 	UMaterialInstanceDynamic* myMaterial;
 	UTexture2D* myTexture;
 	FUpdateTextureRegion2D* updateTextureRegion;
+	UPackage *package;
 
 	int32 width, height, numPixels;
 
