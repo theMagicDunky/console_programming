@@ -28,7 +28,7 @@ public:
 	~ATextureGenerator();
 
 protected:
-	const int numBubbleTextures = 2;
+	const int numBubbleTextures = 1;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
