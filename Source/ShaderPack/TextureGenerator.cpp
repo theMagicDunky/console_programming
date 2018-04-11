@@ -67,40 +67,42 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 	// thanks fam
 	// http://isaratech.com/save-a-procedurally-generated-texture-as-a-new-asset/
 
+	currentPackage = package[texID];
 	FString packageName = TEXT("/Game/ProceduralTextures/circleTex");
-	package = CreatePackage(NULL, *packageName);
-	package->FullyLoad();
+	currentPackage = CreatePackage(NULL, *packageName);
+	currentPackage->FullyLoad();
 
+	currentTexture = myTextures[texID++];
 	// texture setup
-	myTexture = NewObject<UTexture2D>(package, TEXT("circleTex"), RF_Public | RF_Standalone | RF_MarkAsRootSet);
-	myTexture->AddToRoot();
-	myTexture->PlatformData = new FTexturePlatformData();
-	myTexture->PlatformData->SizeX = width; myTexture->PlatformData->SizeY = height;
-	myTexture->PlatformData->NumSlices = 1;
-	myTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
+	currentTexture = NewObject<UTexture2D>(currentPackage, TEXT("circleTex"), RF_Public | RF_Standalone | RF_MarkAsRootSet);
+	currentTexture->AddToRoot();
+	currentTexture->PlatformData = new FTexturePlatformData();
+	currentTexture->PlatformData->SizeX = width; currentTexture->PlatformData->SizeY = height;
+	currentTexture->PlatformData->NumSlices = 1;
+	currentTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
 
-	generateNoise();
-	bool saved = saveTexture(packageName);
+	//generateNoise();
+	//bool saved = saveTexture();
 
 	myMaterial = staticMesh->CreateAndSetMaterialInstanceDynamic(materialIndex);
 
-	UE_LOG(LogTemp, Warning, TEXT("%s"), saved ? TEXT("wow it did it") : TEXT("wow it didnt do it"));
-	if (saved)
-	{
-		myMaterial->SetTextureParameterValue("bubbleTexture1", myTexture);
-		UE_LOG(LogTemp, Warning, TEXT("pls work"));
-	}
+	//UE_LOG(LogTemp, Warning, TEXT("%s"), saved ? TEXT("wow it did it") : TEXT("wow it didnt do it"));
+	//if (saved)
+	//{
+	//	myMaterial->SetTextureParameterValue("bubbleTexture1", currentTexture);
+	//	UE_LOG(LogTemp, Warning, TEXT("pls work"));
+	//}
 }
 void ATextureGenerator::GenNoiseTexture()
 {
 	generateNoise();
 
-	myTexture->UpdateTextureRegions(
+	currentTexture->UpdateTextureRegions(
 		0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),
 		reinterpret_cast<uint8*>(pixels)
 	);
 
-	myMaterial->SetTextureParameterValue("noiseTexture", myTexture);
+	myMaterial->SetTextureParameterValue("noiseTexture", currentTexture);
 }
 
 void ATextureGenerator::GenNewBubbleTextures(int radius, int numBubbles)
@@ -139,17 +141,16 @@ void ATextureGenerator::GenCircleTexture(int radius, int numBubbles, FName textu
 		}
 	}
 
-	myTexture->UpdateTextureRegions(
-		0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),
-		reinterpret_cast<uint8*>(pixels)
-	);
-
-	myMaterial->SetTextureParameterValue(texture, myTexture);
+	// urrentTexture->UpdateTextureRegions(
+	// 0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),
+	// reinterpret_cast<uint8*>(pixels)
+	saveTexture();
+	myMaterial->SetTextureParameterValue(texture, currentTexture);
 }
 
-bool ATextureGenerator::saveTexture(FString packageName)
+bool ATextureGenerator::saveTexture()
 {
-	FTexture2DMipMap* mip = new(myTexture->PlatformData->Mips) FTexture2DMipMap();
+	FTexture2DMipMap* mip = new(currentTexture->PlatformData->Mips) FTexture2DMipMap();
 	mip->SizeX = width; mip->SizeY = height;
 
 	mip->BulkData.Lock(LOCK_READ_WRITE);
@@ -157,13 +158,31 @@ bool ATextureGenerator::saveTexture(FString packageName)
 	FMemory::Memcpy(textureData, pixels, sizeof(TexturePixel) * width * height);
 	mip->BulkData.Unlock();
 
-	myTexture->Source.Init(width, height, 1, 1, ETextureSourceFormat::TSF_BGRA8, reinterpret_cast<uint8*>(pixels));
-	myTexture->UpdateResource();
-	package->MarkPackageDirty();
-	FAssetRegistryModule::AssetCreated(myTexture);
+	currentTexture->Source.Init(width, height, 1, 1, ETextureSourceFormat::TSF_BGRA8, reinterpret_cast<uint8*>(pixels));
+	currentTexture->UpdateResource();
+	currentPackage->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(currentTexture);
 
-	FString packageFilename = FPackageName::LongPackageNameToFilename(packageName, FPackageName::GetAssetPackageExtension());
-	return UPackage::SavePackage(package, myTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *packageFilename, GError, nullptr, true, true, SAVE_NoError);
+	FString packageFilename = FPackageName::LongPackageNameToFilename(TEXT("/Game/ProceduralTextures/circleTex"), FPackageName::GetAssetPackageExtension());
+	return UPackage::SavePackage(currentPackage, currentTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *packageFilename, GError, nullptr, true, true, SAVE_NoError);
+}
+
+void ATextureGenerator::newTexture()
+{
+	currentTexture = myTextures[++texID];
+	currentPackage = package[texID];
+	FString packageName = TEXT("/Game/ProceduralTextures/circleTex");
+	packageName += FString::FromInt(texID);
+	currentPackage = CreatePackage(NULL, *packageName);
+	currentPackage->FullyLoad();
+	// texture setup
+	FString name = TEXT("circleTex"); name += FString::FromInt(texID);
+	currentTexture = NewObject<UTexture2D>(currentPackage, *name, RF_Public | RF_Standalone | RF_MarkAsRootSet);
+	currentTexture->AddToRoot();
+	currentTexture->PlatformData = new FTexturePlatformData();
+	currentTexture->PlatformData->SizeX = width; currentTexture->PlatformData->SizeY = height;
+	currentTexture->PlatformData->NumSlices = 1;
+	currentTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
 }
 
 // Called every frame

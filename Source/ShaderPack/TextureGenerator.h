@@ -35,7 +35,7 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	void generateNoise();
-	bool saveTexture(FString packageName);
+	bool saveTexture();
 	void setPixel(int h, int w, TexturePixel col);
 
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
@@ -44,15 +44,20 @@ protected:
 	void GenNoiseTexture();
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void GenNewBubbleTextures(int radius, int numBubbles);
+	UFUNCTION(BlueprintCallable, Category = "TextureGen")
+	void newTexture();
 
 	void GenCircleTexture(int radius, int numBubbles, FName texture);
 
 	UMaterialInstanceDynamic* myMaterial;
-	UTexture2D* myTexture;
+	UTexture2D *myTextures[256];
+	UTexture2D *currentTexture;
 	FUpdateTextureRegion2D* updateTextureRegion;
-	UPackage *package;
+	UPackage *package[256];
+	UPackage *currentPackage;
 
 	int32 width, height, numPixels;
+	uint8 texID = 0;
 
 	TexturePixel* pixels;
 
