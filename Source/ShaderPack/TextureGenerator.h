@@ -47,6 +47,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void newTexture();
 
+	void GenCloudTexture();
+	double smoothNoise(TexturePixel* noisePixels, double x, double y);
+
 	void GenCircleTexture(int radius, int numBubbles, FName texture);
 
 	UMaterialInstanceDynamic* myMaterial;

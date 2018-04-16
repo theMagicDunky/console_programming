@@ -185,6 +185,50 @@ void ATextureGenerator::newTexture()
 	currentTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
 }
 
+// http://lodev.org/cgtutor/randomnoise.html#Clouds
+void ATextureGenerator::GenCloudTexture()
+{
+	TexturePixel* noisePixels = new TexturePixel[numPixels];
+
+	for (int h = 0; h < height; ++h)
+	{
+		for (int w = 0; w < width; ++w)
+		{
+			uint8 num = rand() % 255;
+			noisePixels[((h*height) / 8) + (w / 8)] = { num, num, num, 255 };
+		}
+	}
+
+	for (int h = 0; h < height; ++h)
+	{
+		for (int w = 0; w < width; ++w)
+		{
+			uint8 num = smoothNoise(noisePixels, w / 8.0, h / 8.0);
+			noisePixels[((h*height) / 8) + (w / 8)] = { num, num, num, 255 };
+		}
+	}
+}
+
+double ATextureGenerator::smoothNoise(TexturePixel* noisePixels, double x, double y)
+{
+	double fractX = x - int(x);
+	double fractY = y - int(y);
+
+	int x1 = (int(x) + width) % width;
+	int y1 = (int(y) + height) % height;
+
+	int x2 = (x1 + width - 1) % width;
+	int y2 = (y1 + height - 1) % height;
+
+	double value = 0.0;
+	value += fractX * fractY * noisePixels[(y1 * height) + x1].b;
+	value += (1 - fractX) * fractY * noisePixels[(y1 * height) + x2].b;
+	value += fractX * (1 - fractY) * noisePixels[(y2 * height) + x1].b;
+	value += (1- fractX) * (1 - fractY) * noisePixels[(y2 * height) + x2].b;
+
+	return value;
+}
+
 // Called every frame
 void ATextureGenerator::Tick(float DeltaTime)
 {
