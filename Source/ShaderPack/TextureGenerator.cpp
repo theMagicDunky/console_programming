@@ -195,7 +195,7 @@ void ATextureGenerator::GenCloudTexture()
 		for (int w = 0; w < width; ++w)
 		{
 			uint8 num = rand() % 255;
-			noisePixels[((h*height) / 8) + (w / 8)] = { num, num, num, 255 };
+			noisePixels[((h*height)) + (w)] = { num, num, num, 255 };
 		}
 	}
 
@@ -203,10 +203,15 @@ void ATextureGenerator::GenCloudTexture()
 	{
 		for (int w = 0; w < width; ++w)
 		{
-			uint8 num = smoothNoise(noisePixels, w / 8.0, h / 8.0);
-			noisePixels[((h*height) / 8) + (w / 8)] = { num, num, num, 255 };
+			//uint8 num = smoothNoise(noisePixels, w / 2.0, h / 2.0);
+			//uint8 num = smoothNoise(noisePixels, (double)w / 8.0, (double)h / 8.0);
+			uint8 num = turbulence(noisePixels, w, h, 256.0);
+			//noisePixels[((h*height)) + (w)] = { num, num, num, 255 };
+			pixels[((h*height)) + (w)] = { num, num, num, 255 };
 		}
 	}
+
+	saveTexture();
 }
 
 double ATextureGenerator::smoothNoise(TexturePixel* noisePixels, double x, double y)
@@ -227,6 +232,19 @@ double ATextureGenerator::smoothNoise(TexturePixel* noisePixels, double x, doubl
 	value += (1- fractX) * (1 - fractY) * noisePixels[(y2 * height) + x2].b;
 
 	return value;
+}
+
+double ATextureGenerator::turbulence(TexturePixel *noisePixels, double x, double y, double size)
+{
+	double value = 0.0, intialSize = size;
+
+	while (size >= 1)
+	{
+		value += smoothNoise(noisePixels, x / size, y / size);
+		size /= 2.0;
+	}
+
+	return (128.0 * value / intialSize);
 }
 
 // Called every frame

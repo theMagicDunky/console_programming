@@ -46,9 +46,11 @@ protected:
 	void GenNewBubbleTextures(int radius, int numBubbles);
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void newTexture();
-
+	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void GenCloudTexture();
+
 	double smoothNoise(TexturePixel* noisePixels, double x, double y);
+	double turbulence(TexturePixel *noisePixels, double x, double y, double size);
 
 	void GenCircleTexture(int radius, int numBubbles, FName texture);
 
