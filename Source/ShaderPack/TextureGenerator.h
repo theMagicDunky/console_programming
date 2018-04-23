@@ -47,7 +47,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
 	void newTexture();
 	UFUNCTION(BlueprintCallable, Category = "TextureGen")
-	void GenCloudTexture();
+	void GenCloudTexture(float turbulenceSize);
 
 	double smoothNoise(TexturePixel* noisePixels, double x, double y);
 	double turbulence(TexturePixel *noisePixels, double x, double y, double size);

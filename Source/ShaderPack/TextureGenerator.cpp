@@ -186,7 +186,7 @@ void ATextureGenerator::newTexture()
 }
 
 // http://lodev.org/cgtutor/randomnoise.html#Clouds
-void ATextureGenerator::GenCloudTexture()
+void ATextureGenerator::GenCloudTexture(float turbulenceSize)
 {
 	TexturePixel* noisePixels = new TexturePixel[numPixels];
 
@@ -204,8 +204,8 @@ void ATextureGenerator::GenCloudTexture()
 		for (int w = 0; w < width; ++w)
 		{
 			//uint8 num = smoothNoise(noisePixels, w / 2.0, h / 2.0);
-			//uint8 num = smoothNoise(noisePixels, (double)w / 8.0, (double)h / 8.0);
-			uint8 num = turbulence(noisePixels, w, h, 256.0);
+			//uint8 num = smoothNoise(noisePixels, (double)w / 16.0, (double)h / 16.0);
+			uint8 num = turbulence(noisePixels, w, h, turbulenceSize);
 			//noisePixels[((h*height)) + (w)] = { num, num, num, 255 };
 			pixels[((h*height)) + (w)] = { num, num, num, 255 };
 		}
@@ -240,7 +240,7 @@ double ATextureGenerator::turbulence(TexturePixel *noisePixels, double x, double
 
 	while (size >= 1)
 	{
-		value += smoothNoise(noisePixels, x / size, y / size);
+		value += smoothNoise(noisePixels, x / size, y / size) * size;
 		size /= 2.0;
 	}
 
