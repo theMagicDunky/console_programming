@@ -163,7 +163,8 @@ bool ATextureGenerator::saveTexture()
 	currentPackage->MarkPackageDirty();
 	FAssetRegistryModule::AssetCreated(currentTexture);
 
-	FString packageFilename = FPackageName::LongPackageNameToFilename(TEXT("/Game/ProceduralTextures/circleTex"), FPackageName::GetAssetPackageExtension());
+	FString filePath = TEXT("/Game/ProceduralTextures/tex_"); filePath.Append(FString::FromInt(texID));
+	FString packageFilename = FPackageName::LongPackageNameToFilename(filePath, FPackageName::GetAssetPackageExtension());
 	return UPackage::SavePackage(currentPackage, currentTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *packageFilename, GError, nullptr, true, true, SAVE_NoError);
 }
 
@@ -171,12 +172,12 @@ void ATextureGenerator::newTexture()
 {
 	currentTexture = myTextures[++texID];
 	currentPackage = package[texID];
-	FString packageName = TEXT("/Game/ProceduralTextures/circleTex");
+	FString packageName = TEXT("/Game/ProceduralTextures/tex_");
 	packageName += FString::FromInt(texID);
 	currentPackage = CreatePackage(NULL, *packageName);
 	currentPackage->FullyLoad();
 	// texture setup
-	FString name = TEXT("circleTex"); name += FString::FromInt(texID);
+	FString name = TEXT("tex_"); name += FString::FromInt(texID);
 	currentTexture = NewObject<UTexture2D>(currentPackage, *name, RF_Public | RF_Standalone | RF_MarkAsRootSet);
 	currentTexture->AddToRoot();
 	currentTexture->PlatformData = new FTexturePlatformData();
@@ -237,14 +238,15 @@ double ATextureGenerator::smoothNoise(TexturePixel* noisePixels, double x, doubl
 double ATextureGenerator::turbulence(TexturePixel *noisePixels, double x, double y, double size)
 {
 	double value = 0.0, intialSize = size;
+	uint8 counter = 0;
 
 	while (size >= 1)
 	{
-		value += smoothNoise(noisePixels, x / size, y / size) * size;
-		size /= 2.0;
+		value += smoothNoise(noisePixels, x / size, y / size);
+		size /= 2.0; ++counter;
 	}
 
-	return (128.0 * value / intialSize);
+	return (value / counter);
 }
 
 // Called every frame
