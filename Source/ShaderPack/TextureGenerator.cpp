@@ -43,6 +43,51 @@ void ATextureGenerator::generateNoise()
 	}
 }
 
+void ATextureGenerator::generateTiledNoise()
+{
+	int size = 128;
+	float freq = 1 / 32.0f, octs = 5;
+
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			uint8 num = 0;
+			for (int o = 0; o < octs; ++o)
+			{
+				num += FMath::Pow(0.5f, o) * perlinNoise(x*FMath::Pow(2, o), y*FMath::Pow(2, o), (size*(int)freq)*FMath::Pow(2, o));
+			}
+			pixels[(y*height) + x] = { num, num, num, 255 };
+		}
+	}
+}
+
+float ATextureGenerator::perlinNoise(float x, float y, int per)
+{
+	int intX = (int)x, intY = (int)y;
+	uint8 perm[512];
+	float dirs[256][2];
+	for (int i = 0; i < 256; ++i)
+	{
+		perm[i] = perm[i + 255] = FMath::RandRange(0, 255);
+		dirs[i][0] = FMath::Cos(i * 2.0f * PI / 256.0f);
+		dirs[i][1] = FMath::Sin(i * 2.0f * PI / 256.0f);
+	}
+
+	return surflet(per, intX + 0, intY + 0, x, y, perm, dirs) + surflet(per, intX + 1, intY + 0, x, y, perm, dirs) +
+		surflet(per, intX + 0, intY + 1, x, y, perm , dirs) + surflet(per, intX + 1, intY + 1, x, y, perm, dirs);
+}
+
+float ATextureGenerator::surflet(int per, float gridX, float gridY, float x, float y, uint8 *perm, float dirs[][2])
+{
+	float distX = FMath::Abs(x - gridX), distY = FMath::Abs(y - gridY);
+	float polyX = 1 - 6 * FMath::Pow(distX, 5) + 15 * FMath::Pow(distX, 4) - 10 * FMath::Pow(distX, 3);
+	float polyY = 1 - 6 * FMath::Pow(distY, 5) + 15 * FMath::Pow(distY, 4) - 10 * FMath::Pow(distY, 3);
+	int hashed = perm[perm[int(gridX) % per] + int(gridY) % per];
+	float grad = 1.0f;//(x - gridX)*dirs[hashed][0] + (y - gridY)*dirs[hashed][1];
+	return polyX * polyY * grad;
+}
+
 void ATextureGenerator::setPixel(int h, int w, TexturePixel col)
 {
 	pixels[(w*width) + h] = col;
@@ -96,6 +141,7 @@ void ATextureGenerator::Init(UStaticMeshComponent * staticMesh, int32 materialIn
 void ATextureGenerator::GenNoiseTexture()
 {
 	generateNoise();
+	//generateTiledNoise();
 
 	currentTexture->UpdateTextureRegions(
 		0, 1, updateTextureRegion, width * sizeof(TexturePixel), sizeof(TexturePixel),

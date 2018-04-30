@@ -35,6 +35,9 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	void generateNoise();
+	void generateTiledNoise();
+	float perlinNoise(float x, float y, int per);
+	float surflet(int per, float gridX, float gridY, float x, float y, uint8 *perm, float dirs[][2]);
 	bool saveTexture();
 	void setPixel(int h, int w, TexturePixel col);
 
