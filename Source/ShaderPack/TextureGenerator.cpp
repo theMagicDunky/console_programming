@@ -258,6 +258,7 @@ void ATextureGenerator::GenCloudTexture(float turbulenceSize)
 		}
 	}
 
+	myMaterial->SetTextureParameterValue("noiseTexture", currentTexture);
 	saveTexture();
 }
 
